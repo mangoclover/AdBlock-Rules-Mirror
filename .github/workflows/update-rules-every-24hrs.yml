@@ -1,0 +1,54 @@
+name: Update AdBlock Rules Every 24 Hours
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+  schedule: 
+    - cron:  '0 0 */1 * *' 
+
+jobs:
+  update-adblock-rules-then-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2.0.0
+            
+      - name: Adguard Simplified Domain Names Filter
+        uses: carlosperate/download-file-action@v1.0.0
+        with: 
+          file-url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+          file-name: AdGuard-Simplified-Domain-Names-Filter.txt
+
+      - name: EasyList China
+        uses: carlosperate/download-file-action@v1.0.0
+        with: 
+          file-url: https://easylist-downloads.adblockplus.org/easylistchina.txt
+          file-name: Easylist-China.txt
+
+      - name: EasyList Privacy
+        uses: carlosperate/download-file-action@v1.0.0
+        with: 
+          file-url: https://easylist.to/easylist/easyprivacy.txt
+          file-name: Easylist-Privacy.txt
+      
+      - name: I dont care about cookies
+        uses: carlosperate/download-file-action@v1.0.0
+        with: 
+          file-url: https://www.i-dont-care-about-cookies.eu/abp/
+          file-name: I-dont-care-about-cookies.txt      
+      
+      - name: Commit Changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then 
+              exit 0
+          else 
+              git add .
+              git config --local user.email "10215166+Hackl0us@users.noreply.github.com"
+              git config --local user.name "github-action[bot]"
+              git commit -m "Updated at $(date)" -a
+          fi
+            
+      - name: GitHub Push
+        uses: ad-m/github-push-action@v0.5.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
